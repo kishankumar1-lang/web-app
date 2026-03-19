@@ -18,10 +18,10 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Set up Java 21
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         java-version: '21'
-        distribution: 'adopt'
+        distribution: 'temurin'
 
     - name: Run Maven build
       run: |
@@ -33,15 +33,27 @@ jobs:
         name: artifact
         path: target/${{ env.IMAGE_NAME }}-0.0.1-SNAPSHOT.jar
 
-    - name: Log in to Azure Container Registry
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ env.AZURE_CONTAINER_REGISTRY }}
-        username: ${{ env.AZURE_CONTAINER_REGISTRY_USERNAME }}
-        password: ${{ secrets.WEBAPPSECRET }}
-
-    - name: Build and push Docker image to Azure Container Registry
+    # Install Podman (important)
+    - name: Install Podman
       run: |
-        docker build . -t ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest -t ${{env.AZURE_CONTAINER_REGISTRY}}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-        docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-        docker push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        sudo apt-get update
+        sudo apt-get -y install podman
+
+    # Login to ACR using Podman
+    - name: Login to Azure Container Registry
+      run: |
+        podman login ${{ env.AZURE_CONTAINER_REGISTRY }} \
+          --username ${{ env.AZURE_CONTAINER_REGISTRY_USERNAME }} \
+          --password ${{ secrets.WEBAPPSECRET }}
+
+    #  Build Image
+    - name: Build Image
+      run: |
+        podman build -t ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+                     -t ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+
+    #  Push Image
+    - name: Push Image
+      run: |
+        podman push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        podman push ${{ env.AZURE_CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
