@@ -1,4 +1,4 @@
-name: CI/CD to Azure Container Registry
+name: CI/CD to Azure Container Registry kishan.azurecr.io
 
 env:
   AZURE_CONTAINER_REGISTRY: kishan.azurecr.io
@@ -15,10 +15,10 @@ jobs:
 
     steps:
     - name: Check out source code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Java 21
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '21'
         distribution: 'temurin'
