@@ -1,6 +1,7 @@
 name: CI/CD to Azure Container Registry kishan.azurecr.io
 
 env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
   AZURE_CONTAINER_REGISTRY: kishan.azurecr.io
   AZURE_CONTAINER_REGISTRY_USERNAME: kishan
   IMAGE_NAME: webapp
